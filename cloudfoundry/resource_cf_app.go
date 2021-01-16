@@ -288,12 +288,12 @@ func resourceAppCreate(d *schema.ResourceData, meta interface{}) error {
 
 	appResp, err := deployer.Deploy(appDeploy)
 	if err != nil {
-		return err
+		return fmt.Errorf("deployer.Deploy [%s]: %w", appDeploy.App.Name, err)
 	}
 	AppDeployToResourceData(d, appResp)
 	err = metadataCreate(appMetadata, d, meta)
 	if err != nil {
-		return err
+		return fmt.Errorf("metadataCreate [%s]: %w", appDeploy.App.Name, err)
 	}
 	return nil
 }
@@ -418,7 +418,7 @@ func resourceAppUpdate(d *schema.ResourceData, meta interface{}) error {
 	if IsAppCodeChange(d) {
 		appResp, err := deployer.Deploy(appDeploy)
 		if err != nil {
-			return err
+			return fmt.Errorf("deployer.Deploy [%s]: %w", appDeploy.App.Name, err)
 		}
 		d.Partial(false)
 		AppDeployToResourceData(d, appResp)
@@ -524,7 +524,7 @@ func resourceAppUpdate(d *schema.ResourceData, meta interface{}) error {
 	if IsAppRestageNeeded(d) || (deployer.IsCreateNewApp() && IsAppRestartNeeded(d)) {
 		appResp, err := deployer.Restage(appDeploy)
 		if err != nil {
-			return err
+			return fmt.Errorf("deployer.Restage [%s]: %w", appDeploy.App.Name, err)
 		}
 		d.Partial(false)
 		AppDeployToResourceData(d, appResp)
@@ -534,7 +534,7 @@ func resourceAppUpdate(d *schema.ResourceData, meta interface{}) error {
 	if IsAppRestartNeeded(d) {
 		err := session.RunBinder.Restart(appDeploy, DefaultStageTimeout)
 		if err != nil {
-			return err
+			return fmt.Errorf("session.RunBinder.Restart [%s]: %w", appDeploy.App.Name, err)
 		}
 		d.Partial(false)
 		return nil
